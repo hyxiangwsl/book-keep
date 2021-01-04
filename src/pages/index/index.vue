@@ -10,12 +10,12 @@
           @change="bindDateChange"
         >
           <view class="uni-input">
-            <image src="../../static/icon/摘选.png"></image>
+            <image src="../../static/icon/select.png"></image>
             {{ date }}</view
           >
         </picker>
       </view>
-      <image class="nav-setting" src="../../static/icon/设置.png"></image>
+      <image class="nav-setting" src="../../static/icon/setting.png"></image>
     </view>
     <view class="content-main">
       <view class="total"
@@ -40,9 +40,9 @@
     </view>
     <view class="bottom">
       <view class="bottom-balance">
-        <image src="../../static/icon/三横线.png"></image>
+        <image src="../../static/icon/hang.png"></image>
         <text class="bottom-balance-price">余额:￥{{ balance }}</text>
-        <image src="../../static/icon/三横线.png"></image>
+        <image src="../../static/icon/hang.png"></image>
       </view>
       <view class="bottom-op">
         <image @click="toCut" src="../../static/icon/jianshao.png"></image>

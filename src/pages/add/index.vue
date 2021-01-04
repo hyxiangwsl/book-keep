@@ -1,7 +1,7 @@
 <template>
   <view class="container">
     <view class="pick-time">
-      <image src="../../static/icon/日期.png"></image>
+      <image src="../../static/icon/date.png"></image>
       <picker
         mode="date"
         :value="date"
