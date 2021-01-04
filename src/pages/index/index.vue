@@ -3,57 +3,45 @@
     <view class="navi">
       <view class="nav-picker">
         <picker
-          @change="bindPickerChange"
-          :value="index"
-          :range="array"
-          mode="multiSelector"
+          mode="date"
+          :value="date"
+          :start="startDate"
+          :end="endDate"
+          @change="bindDateChange"
         >
           <view class="uni-input">
             <image src="../../static/icon/摘选.png"></image>
-            <text>{{ time }}</text>
-          </view>
+            {{ date }}</view
+          >
         </picker>
       </view>
       <image class="nav-setting" src="../../static/icon/设置.png"></image>
     </view>
     <view class="content-main">
       <view class="total"
-        ><view class="font-main title">{{ time }}</view>
-        <view class="font-main title"
-          >收入:{{ addAll.toFixed(2) }} 支取:{{ cutAll.toFixed(2) }}</view
-        >
+        ><view class="font-main title">{{ date }}</view>
+        <view class="font-main title">收入:{{ addAll }} 支取:{{ cutAll }}</view>
       </view>
       <view class="mainView">
-        <view class="list" v-for="(item, index) in dataList" :key="index">
+        <view class="list" v-for="(i, idx) in dataList" :key="idx">
           <view class="list-left">
-            <image
-              v-if="item.type == '1'"
-              src="../../static/icon/add.png"
-            ></image>
-            <image
-              v-if="item.type == '0'"
-              src="../../static/icon/cut.png"
-            ></image>
-            <text>{{ item.desc }}</text>
+            <image v-if="i.type == '1'" src="../../static/icon/add.png"></image>
+            <image v-if="i.type == '0'" src="../../static/icon/cut.png"></image>
+            <text class="font-main">{{ i.desc }}</text>
           </view>
           <view class="list-right">
-            <text class="font-main" v-if="item.type == '0'"
-              >￥{{ item.count }}</text
-            >
-            <text style="color: #d81e06" v-if="item.type == '1'"
-              >-￥{{ item.count }}</text
+            <text class="font-main" v-if="i.type == '0'">￥{{ i.count }}</text>
+            <text style="color: #d81e06" v-if="i.type == '1'"
+              >-￥{{ i.count }}</text
             >
           </view>
         </view>
       </view>
     </view>
-    <view> </view>
     <view class="bottom">
       <view class="bottom-balance">
         <image src="../../static/icon/三横线.png"></image>
-        <text class="bottom-balance-price"
-          >余额:￥{{ balance.toFixed(2) }}</text
-        >
+        <text class="bottom-balance-price">余额:￥{{ balance }}</text>
         <image src="../../static/icon/三横线.png"></image>
       </view>
       <view class="bottom-op">
@@ -67,58 +55,117 @@
   </view>
 </template>
 
-<script lang="ts">
+<script>
+import Bmob from "hydrogen-js-sdk";
 import Vue from "vue";
+
 export default Vue.extend({
   data() {
+    const currentDate = this.getDate({
+      format: true,
+    });
     return {
       time: "2021年1月",
-      array: [[], []], //选择年份月份数组
       index: 0,
-      balance: 10.0,
-      dataList: [
-        { type: 0, desc: "支出", count: 100 },
-        { type: 1, desc: "收入", count: 10 },
-        { type: 0, desc: "支出", count: 100 },
-        { type: 1, desc: "收入", count: 10 },
-      ],
-      addAll: 100,
-      cutAll: 10,
+      balance: 0,
+      dataList: [],
+      addAll: 0,
+      cutAll: 0,
+      date: currentDate,
+      userId: "", //用户id
     };
   },
-  onLoad() {},
+  onLoad(option) {
+    this.userId = option.userId;
+    console.log(option.userId, "id");
+  },
   onShow() {
-    this.array = this.getPickTime();
+    this.getDataList();
+  },
+  computed: {
+    startDate() {
+      return this.getDate("start");
+    },
+    endDate() {
+      return this.getDate("end");
+    },
   },
   methods: {
-    bindPickerChange(e: any) {
-      let selectArr = e.detail.value;
-      this.time = `${this.array[0][selectArr[0]]}${
-        this.array[1][selectArr[1]]
-      }`;
-      console.log("选择时间", selectArr);
+    bindDateChange: function (e) {
+      this.date = e.target.value;
+      this.getDataList();
     },
-    getPickTime() {
-      let arr: any[] = [];
-      let current = new Date();
-      let year = current.getFullYear() - 6;
-      let years = [];
-      let months = [];
-      for (let i = 0; i < 10; i++) {
-        years.push(`${year + i}年`);
+    getDate(type) {
+      const date = new Date();
+      let year = date.getFullYear();
+      let month = date.getMonth() + 1;
+      let day = date.getDate();
+
+      if (type === "start") {
+        year = year - 60;
+      } else if (type === "end") {
+        year = year + 2;
       }
-      for (let i = 0; i < 12; i++) {
-        months.push(`${i + 1}月`);
-      }
-      arr.push(years, months);
-      return arr;
+      month = month > 9 ? month : "0" + month;
+      day = day > 9 ? day : "0" + day;
+      return `${year}-${month}-${day}`;
     },
     toCut() {
-      uni.navigateTo({ url: "/pages/cut/index" });
+      uni.navigateTo({ url: "/pages/cut/index?" + `userId=${this.userId}` });
     },
     toAdd() {
-      uni.navigateTo({ url: "/pages/add/index" });
+      uni.navigateTo({ url: "/pages/add/index?" + `userId=${this.userId}` });
     },
+    //获取账单操作
+    getDataList() {
+      const query = Bmob.Query("income-expend");
+      //时间查询
+      query.equalTo("date", "==", this.date);
+      query.equalTo("user_id", "==", this.userId);
+      query.find().then((res) => {
+        // console.log(res);
+        this.dataList = res;
+      });
+
+      query.statTo("sum", "count");
+      query.statTo("groupby", "type");
+      query.statTo("order", "-createdAt");
+      query.find().then((res) => {
+        if (res.length == 0) {
+          this.addAll = 0;
+          this.cutAll = 0;
+        }
+        res.forEach((e) => {
+          if (e.type == "0") {
+            this.addAll = e._sumCount;
+          }
+          if (e.type == "1") {
+            this.cutAll = e._sumCount;
+          }
+        });
+      });
+      this.getBalance();
+    },
+    getBalance(){
+      let addAll = 0;
+      let cutAll = 0;
+      const query = Bmob.Query("income-expend");
+      query.equalTo("user_id", "==", this.userId);
+      query.statTo("sum", "count");
+      query.statTo("groupby", "type");
+      query.statTo("order", "-createdAt");
+      query.find().then((res) => {
+        res.forEach((e) => {
+          if (e.type == "0") {
+            addAll = e._sumCount;
+          }
+          if (e.type == "1") {
+            cutAll = e._sumCount;
+          }
+        });
+        this.balance = Number(addAll - cutAll).toFixed(2);
+      });
+    }
   },
 });
 </script>
@@ -149,6 +196,7 @@ export default Vue.extend({
 }
 .content-main {
   flex: 1;
+  overflow: auto;
 }
 .total {
   display: flex;

@@ -13,17 +13,30 @@
       </picker>
     </view>
     <view class="input-price">
-      <input class="uni-input" type="digit" placeholder-class="font-plc"  focus placeholder="输入金额" />
+      <input
+        class="uni-input"
+        type="digit"
+        placeholder-class="font-plc"
+        focus
+        v-model="form.count"
+        placeholder="输入金额"
+      />
     </view>
     <view class="input-desc">
-      <input class="uni-input" placeholder-class="font-plc2"  placeholder="添加备注" />
+      <input
+        v-model="form.desc"
+        class="uni-input"
+        placeholder-class="font-plc2"
+        placeholder="添加备注"
+      />
     </view>
     <view class="submit">
-        <button type="primary" :loading="loading">提交</button>
+      <button type="primary" :loading="loading" @click="submit">提交</button>
     </view>
   </view>
 </template>
 <script>
+import Bmob from "hydrogen-js-sdk";
 export default {
   data() {
     const currentDate = this.getDate({
@@ -31,8 +44,18 @@ export default {
     });
     return {
       date: currentDate,
-      loading:false,
+      loading: false,
+      userId:"",
+      form: {
+        //添加数据表单
+        desc: "",
+        count: "",
+      },
     };
+  },
+  onLoad(option) {
+    this.userId = option.userId;
+    // console.log(option.userId, "id");
   },
   computed: {
     startDate() {
@@ -60,6 +83,33 @@ export default {
       month = month > 9 ? month : "0" + month;
       day = day > 9 ? day : "0" + day;
       return `${year}-${month}-${day}`;
+    },
+    submit() {
+      // console.log(this.form, this.date);
+      if (this.form.count == "") {
+        uni.showToast({
+          title: "金额不能为空",
+          duration: 2000,
+          icon: "none",
+        });
+        return;
+      }
+      const query = Bmob.Query("income-expend");
+      query.set("user_id", this.userId);
+      query.set("type", 0);
+      query.set("desc", this.form.desc);
+      query.set("count", Number(this.form.count));
+      query.set("date", this.date);
+      this.loading = true;
+      query
+        .save()
+        .then((res) => {
+          uni.navigateTo({ url: "/pages/index/index?"+`userId=${this.userId}` });
+          this.loading = false;
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     },
   },
 };
@@ -96,13 +146,13 @@ export default {
 }
 .input-desc input {
   padding-top: 50rpx;
-  border-bottom: 1rpx solid #8cc59a;  
+  border-bottom: 1rpx solid #8cc59a;
 }
-.submit{
-    width: 80%;
-    margin-top: 150rpx;
+.submit {
+  width: 80%;
+  margin-top: 150rpx;
 }
-.submit button{
-    background-color: #8cc59a;
+.submit button {
+  background-color: #8cc59a;
 }
 </style>

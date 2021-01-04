@@ -3,14 +3,21 @@ import Vue from "vue";
 export default Vue.extend({
   mpType: "app",
   onLaunch() {
-    console.log("App Launch");
+    let userId = uni.getStorageSync("userId");
+    if (userId) {
+      uni.navigateTo({ url: "/pages/index/index?"+`userId=${userId}` });
+    } else {
+      uni.navigateTo({ url: "/pages/login/index" });
+    }
   },
   onShow() {
-    console.log("App Show");
+    setTimeout(() => {
+      // #ifdef APP-PLUS
+      plus.navigator.closeSplashscreen();
+      // #endif
+    }, 2000);
   },
-  onHide() {
-    console.log("App Hide");
-  },
+  onHide() {},
 });
 </script>
 
