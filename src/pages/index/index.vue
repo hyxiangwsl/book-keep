@@ -146,7 +146,7 @@ export default Vue.extend({
       });
       this.getBalance();
     },
-    getBalance(){
+    getBalance() {
       let addAll = 0;
       let cutAll = 0;
       const query = Bmob.Query("income-expend");
@@ -165,7 +165,7 @@ export default Vue.extend({
         });
         this.balance = Number(addAll - cutAll).toFixed(2);
       });
-    }
+    },
   },
 });
 </script>
@@ -177,11 +177,13 @@ export default Vue.extend({
   align-items: center;
 }
 .nav-picker {
+  margin-top: 25rpx;
   margin-left: 20rpx;
   font-size: 36rpx;
   color: #ebf6f1;
 }
 .nav-setting {
+  margin-top: 25rpx;
   margin-right: 20rpx;
   width: 45rpx;
   height: 45rpx;

@@ -35,7 +35,9 @@
                 ]
             },
             "ios" : {},
-            "sdkConfigs" : {}
+            "sdkConfigs" : {
+                "ad" : {}
+            }
         },
         "splashscreen" : {
             "alwaysShowBeforeRender" : false,
@@ -48,7 +50,7 @@
     "quickapp" : {},
     "mp-weixin" : {
         "usingComponents" : true,
-        "appid" : "",
+        "appid" : "wxd2ee21230af1d64c",
         "setting" : {
             "urlCheck" : true
         }
